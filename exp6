@@ -1,0 +1,222 @@
+**index.html**
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Student Examination Result</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            width: 500px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Student Examination Result</h2>
+
+    <form action="ResultServlet" method="post">
+
+        <label>Register Number:</label>
+        <input type="text" name="regno" required>
+
+        <label>Student Name:</label>
+        <input type="text" name="name" required>
+
+        <label>Department:</label>
+        <select name="department" required>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="EEE">EEE</option>
+            <option value="MECH">MECH</option>
+            <option value="CIVIL">CIVIL</option>
+        </select>
+
+        <label>Subject 1 Mark:</label>
+        <input type="number" name="mark1" min="0" max="100" required>
+
+        <label>Subject 2 Mark:</label>
+        <input type="number" name="mark2" min="0" max="100" required>
+
+        <label>Subject 3 Mark:</label>
+        <input type="number" name="mark3" min="0" max="100" required>
+
+        <label>Subject 4 Mark:</label>
+        <input type="number" name="mark4" min="0" max="100" required>
+
+        <label>Subject 5 Mark:</label>
+        <input type="number" name="mark5" min="0" max="100" required>
+
+        <label>Attendance Percentage:</label>
+        <input type="number" name="attendance"
+               min="0" max="100" step="0.01" required>
+
+        <input type="submit" value="Calculate Result">
+
+    </form>
+
+</div>
+
+</body>
+</html>
+
+**ResultServlet.java**
+
+package com.student;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@WebServlet("/ResultServlet")
+public class ResultServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+
+        String regno = request.getParameter("regno");
+        String name = request.getParameter("name");
+        String department = request.getParameter("department");
+
+        int mark1 = Integer.parseInt(request.getParameter("mark1"));
+        int mark2 = Integer.parseInt(request.getParameter("mark2"));
+        int mark3 = Integer.parseInt(request.getParameter("mark3"));
+        int mark4 = Integer.parseInt(request.getParameter("mark4"));
+        int mark5 = Integer.parseInt(request.getParameter("mark5"));
+
+        double attendance = Double.parseDouble(request.getParameter("attendance"));
+
+        int total = mark1 + mark2 + mark3 + mark4 + mark5;
+        double average = total / 5.0;
+
+        String grade;
+
+        if (average >= 90)
+            grade = "O";
+        else if (average >= 80)
+            grade = "A+";
+        else if (average >= 70)
+            grade = "A";
+        else if (average >= 60)
+            grade = "B+";
+        else if (average >= 50)
+            grade = "B";
+        else if (average >= 40)
+            grade = "C";
+        else
+            grade = "F";
+
+        boolean eligible = attendance >= 75;
+
+        boolean subjectPass =
+                mark1 >= 40 &&
+                mark2 >= 40 &&
+                mark3 >= 40 &&
+                mark4 >= 40 &&
+                mark5 >= 40;
+
+        boolean averagePass = average >= 50;
+
+        boolean pass = eligible && subjectPass && averagePass;
+
+        String result = pass ? "PASS" : "FAIL";
+
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Student Result</title>");
+        out.println("</head>");
+
+        out.println("<body>");
+
+        out.println("<h1>Student Examination Result</h1>");
+
+        out.println("<table border='1' cellpadding='10'>");
+
+        out.println("<tr><th>Register Number</th><td>" + regno + "</td></tr>");
+        out.println("<tr><th>Student Name</th><td>" + name + "</td></tr>");
+        out.println("<tr><th>Department</th><td>" + department + "</td></tr>");
+
+        out.println("</table>");
+
+        out.println("<br>");
+
+        out.println("<table border='1' cellpadding='10'>");
+
+        out.println("<tr><th>Subject</th><th>Marks</th></tr>");
+        out.println("<tr><td>Subject 1</td><td>" + mark1 + "</td></tr>");
+        out.println("<tr><td>Subject 2</td><td>" + mark2 + "</td></tr>");
+        out.println("<tr><td>Subject 3</td><td>" + mark3 + "</td></tr>");
+        out.println("<tr><td>Subject 4</td><td>" + mark4 + "</td></tr>");
+        out.println("<tr><td>Subject 5</td><td>" + mark5 + "</td></tr>");
+
+        out.println("<tr><th>Total</th><th>" + total + " / 500</th></tr>");
+        out.println("<tr><th>Average</th><th>" + String.format("%.2f", average) + "%</th></tr>");
+        out.println("<tr><th>Grade</th><th>" + grade + "</th></tr>");
+
+        out.println("</table>");
+
+        out.println("<br>");
+
+        out.println("<table border='1' cellpadding='10'>");
+
+        out.println("<tr><th>Attendance</th><td>" + attendance + "%</td></tr>");
+        out.println("<tr><th>Attendance Eligibility</th><td>"
+                + (eligible ? "Eligible" : "Not Eligible") + "</td></tr>");
+
+        out.println("<tr><th>Subject-wise Minimum Mark</th><td>"
+                + (subjectPass ? "Satisfied" : "Not Satisfied") + "</td></tr>");
+
+        out.println("<tr><th>Overall Average</th><td>"
+                + (averagePass ? "Satisfied" : "Not Satisfied") + "</td></tr>");
+
+        out.println("<tr><th>Final Result</th><th>" + result + "</th></tr>");
+
+        out.println("</table>");
+
+        out.println("</body>");
+        out.println("</html>");
+    }
+}
